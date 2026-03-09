@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAI Labs — Research Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #070b13;
+            --surface: #0d1420;
+            --card: #111827;
+            --card2: #141e2e;
+            --border: #1e2d47;
+            --border2: #243450;
+            --accent: #3b82f6;
+            --accent2: #06b6d4;
+            --accent-glow: rgba(59,130,246,0.15);
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --muted2: #94a3b8;
+            --success: #10b981;
+            --font-head: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+        /* ── NOISE TEXTURE ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            height: 64px;
+            background: rgba(7,11,19,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: var(--font-head);
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-brand-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-greeting {
+            font-size: 13px;
+            color: var(--muted2);
+            padding: 6px 14px;
+            margin-right: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .nav-greeting span {
+            color: var(--accent2);
+            font-weight: 500;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted2);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: var(--font-body);
+        }
+
+        .nav-link:hover { background: var(--surface); color: var(--text); }
+        .nav-link.active { background: var(--accent-glow); color: var(--accent); }
+
+        .nav-link svg { width: 16px; height: 16px; }
+
+        .nav-link-logout {
+            color: #ef4444;
+            opacity: 0.7;
+        }
+        .nav-link-logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; opacity: 1; }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px 60px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 80% 80%, rgba(6,182,212,0.05) 0%, transparent 50%);
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(30,45,71,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30,45,71,0.3) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 30%, transparent 100%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent2);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            position: relative;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent2);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-title {
+            font-family: var(--font-head);
+            font-size: clamp(42px, 7vw, 84px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            color: var(--text);
+            position: relative;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+
+        .hero-title em {
+            font-style: normal;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-cta {
+            margin-top: 36px;
+            position: relative;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 24px rgba(59,130,246,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 36px rgba(59,130,246,0.45);
+        }
+
+        .btn-primary svg { width: 18px; height: 18px; }
+
+        /* ── UPLOAD SECTION ── */
+        #upload-section {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .upload-zone {
+            border: 1.5px dashed rgba(59,130,246,0.35);
+            border-radius: 20px;
+            padding: 56px 40px;
+            text-align: center;
+            cursor: pointer;
+            background: linear-gradient(145deg, rgba(13,20,32,0.9), rgba(17,24,39,0.95));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(59,130,246,0.08);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59,130,246,0.06), transparent 70%);
+            pointer-events: none;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: rgba(59,130,246,0.6);
+            background: linear-gradient(145deg, rgba(59,130,246,0.04), rgba(17,24,39,0.95));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 1px rgba(59,130,246,0.15), 0 8px 32px rgba(59,130,246,0.08);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon svg { width: 30px; height: 30px; color: var(--accent); }
+
+        .upload-title {
+            font-family: var(--font-head);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .upload-sub { font-size: 14px; color: var(--muted); }
+        .upload-sub span { color: var(--accent); cursor: pointer; }
+
+        .upload-file-name {
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--accent2);
+            display: none;
+        }
+
+        .upload-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 16px;
+            gap: 8px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .btn-analyze {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+        }
+
+        .btn-analyze svg { width: 15px; height: 15px; }
+
+        .btn-analyze:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(59,130,246,0.4);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── LOADING ── */
+        .loader {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            color: var(--muted2);
+            font-size: 14px;
+        }
+
+        .loader.active { display: flex; justify-content: center; margin-top: 24px; }
+
+        .loader-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .loader-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        /* ── SUMMARY CONTAINER ── */
+        #result-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+            display: none;
+        }
+
+        #result-section.visible { display: block; }
+
+        .result-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .result-header {
+            padding: 28px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.06), transparent);
+        }
+
+        .result-header-icon {
+            width: 46px;
+            height: 46px;
+            background: rgba(59,130,246,0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .result-header-icon svg { width: 22px; height: 22px; color: var(--accent); }
+
+        .result-header-text h3 {
+            font-family: var(--font-head);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .result-header-text p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* ── SUMMARY BODY ── */
+        .result-body {
+            padding: 36px 40px;
+            font-size: 15px;
+            color: var(--muted2);
+            line-height: 1.85;
+            white-space: pre-wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── CHAT DIVIDER ── */
+        .chat-divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 40px;
+            background: linear-gradient(90deg, rgba(6,182,212,0.04), transparent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chat-divider-icon {
+            width: 34px;
+            height: 34px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .chat-divider-icon svg { width: 16px; height: 16px; color: var(--accent2); }
+
+        .chat-divider-text h5 {
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .chat-divider-text p {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ── CHATBOT ── */
+        .chat-section {
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-header {
+            padding: 24px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .chat-header-info h4 {
+            font-family: var(--font-head);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .chat-header-info p {
+            font-size: 12px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-header-info p::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .chat-messages {
+            padding: 28px 40px;
+            max-height: 480px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .chat-bubble.user { flex-direction: row-reverse; }
+
+        .bubble-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .bubble-avatar.ai {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+        }
+
+        .bubble-avatar.user-av {
+            background: var(--border2);
+            color: var(--muted2);
+        }
+
+        .bubble-text {
+            max-width: 65%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .chat-bubble.user .bubble-text {
+            background: var(--accent);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble:not(.user) .bubble-text {
+            background: var(--card2);
+            border: 1px solid var(--border);
+            color: var(--muted2);
+            border-bottom-left-radius: 4px;
+        }
+
+        .bubble-name {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .chat-input-area {
+            padding: 20px 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus { border-color: var(--accent); }
+        .chat-input::placeholder { color: var(--muted); }
+
+        .btn-send {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-send:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn-send svg { width: 16px; height: 16px; }
+
+        /* ── HOW IT WORKS ── */
+        .section {
+            padding: 80px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-head);
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--muted2);
+            font-size: 15px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background: var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .step-card {
+            background: var(--card);
+            padding: 40px 32px;
+            position: relative;
+        }
+
+        .step-number {
+            font-family: var(--font-head);
+            font-size: 64px;
+            font-weight: 800;
+            color: rgba(59,130,246,0.08);
+            line-height: 1;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .step-icon svg { width: 22px; height: 22px; color: var(--accent); }
+
+        .step-card h3 {
+            font-family: var(--font-head);
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: var(--muted2);
+            line-height: 1.6;
+        }
+
+        /* ── FEATURE CARDS ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 0;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: block;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(6,182,212,0.2)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.35s;
+        }
+
+        .feature-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.15); }
+        .feature-card:hover::after { opacity: 1; }
+
+        .feature-card-banner {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card-banner-compare {
+            background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%);
+        }
+
+        .feature-card-banner-search {
+            background: linear-gradient(135deg, #070f1e 0%, #0b1c35 50%, #061018 100%);
+        }
+
+        .banner-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(59,130,246,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.15) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .banner-visual-compare {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .doc-mock {
+            width: 52px;
+            height: 68px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 6px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px 6px;
+        }
+
+        .doc-mock::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: rgba(59,130,246,0.3);
+            border-radius: 0 6px 0 4px;
+        }
+
+        .doc-line { height: 2px; background: rgba(255,255,255,0.15); border-radius: 1px; }
+        .doc-line.short { width: 60%; }
+        .doc-line.accent { background: rgba(59,130,246,0.4); }
+
+        .vs-badge {
+            width: 32px;
+            height: 32px;
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-head);
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .winner-badge {
+            position: absolute;
+            top: 12px;
+            right: 60px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.4);
+            border-radius: 12px;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .banner-visual-search {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-mock {
+            width: 220px;
+        }
+
+        .search-bar-mock {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(59,130,246,0.25);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+        }
+
+        .search-bar-mock-icon { width: 12px; height: 12px; color: var(--muted); flex-shrink: 0; }
+        .search-bar-text { font-size: 11px; color: var(--muted2); }
+        .search-bar-cursor { width: 1px; height: 12px; background: var(--accent); animation: blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        .search-result-mock {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .srm-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .srm-lines { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .srm-line { height: 2px; background: rgba(255,255,255,0.12); border-radius: 1px; }
+        .srm-line.accent-line { background: rgba(59,130,246,0.4); }
+        .srm-line.short { width: 60%; }
+
+        .feature-card-body {
+            padding: 28px 32px 32px;
+        }
+
+        .feature-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .feature-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent2);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-head);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--muted2);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .feature-bullets {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 24px;
+        }
+
+        .feature-bullet {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted2);
+        }
+
+        .feature-bullet::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .feature-arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: var(--font-head);
+            padding: 8px 16px;
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .feature-arrow svg { width: 14px; height: 14px; transition: transform 0.2s; }
+        .feature-card:hover .feature-arrow { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .feature-card:hover .feature-arrow svg { transform: translateX(3px); }
+
+        /* ── STATS STRIP ── */
+        .stats-strip {
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            padding: 40px 24px;
+        }
+
+        .stats-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item h4 {
+            font-family: var(--font-head);
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer span { color: var(--accent); }
+
+        /* ── TECH GRID ── */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .tech-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 32px 28px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .tech-card:hover { transform: translateY(-3px); border-color: var(--border2); }
+
+        .tech-icon {
+            width: 48px; height: 48px;
+            border: 1px solid;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .tech-icon svg { width: 22px; height: 22px; }
+
+        .tech-card h4 {
+            font-family: var(--font-head);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .tech-card p {
+            font-size: 14px;
+            color: var(--muted2);
+            line-height: 1.7;
+        }
+
+        /* ── REVIEWS ── */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .review-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.2s;
+        }
+
+        .review-card:hover { transform: translateY(-3px); }
+
+        .review-stars {
+            font-size: 14px;
+            color: #f59e0b;
+            letter-spacing: 2px;
+        }
+
+        .review-text {
+            font-size: 14px;
+            color: var(--muted2);
+            line-height: 1.75;
+            flex: 1;
+            font-style: italic;
+        }
+
+        .review-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .review-avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 15px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .review-name {
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .review-role {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-greeting { display: none; }
+            .steps-grid { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
+            .tech-grid { grid-template-columns: 1fr; }
+            .reviews-grid { grid-template-columns: 1fr; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav>
+    <a href="/" class="nav-brand">
+        <div class="nav-brand-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="url(#kg)"/>
+                <rect x="8" y="7" width="3.5" height="18" rx="1.5" fill="white"/>
+                <path d="M12 15.5 L21.5 7.5" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+                <rect x="15" y="14.5" width="3" height="3" rx="1" fill="url(#kg)" opacity="0.9"/>
+                <path d="M12 16.5 L22 24.5" stroke="white" stroke-width="3.2" stroke-linecap="round" opacity="0.7"/>
+                <defs>
+                    <linearGradient id="kg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#3b82f6"/>
+                        <stop offset="100%" stop-color="#06b6d4"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        KAI Labs
+    </a>
+
+    <div class="nav-right">
+        <!-- Greeting shown when logged in -->
+        {% if user.is_authenticated %}
+        <div class="nav-greeting">Good day, <span>{{ user.username }}</span> 👋</div>
+        {% endif %}
+
+        <a href="/" class="nav-link active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            Home
+        </a>
+
+        <a href="{% url 'paper_search' %}" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+        </a>
+
+        <a href="{% url 'history' %}" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            History
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="nav-link nav-link-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="nav-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-badge">
+        <div class="badge-dot"></div>
+        Powered by AI
+    </div>
+
+    <h1 class="hero-title">Your AI Copilot for<br><em>Research Papers</em></h1>
+
+    <div class="hero-cta">
+        <a href="#upload-section" class="btn-primary" onclick="document.getElementById('upload-section').scrollIntoView({behavior:'smooth'}); return false;">
+            Get started — it's free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </a>
+    </div>
+</section>
+
+<!-- ── UPLOAD SECTION ── -->
+<div id="upload-section">
+    <div style="text-align:center; margin-bottom:12px;" class="section-label">Upload your paper</div>
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
+        <div class="upload-zone" id="dropZone">
+            <input type="file" name="pdf" id="pdfInput" accept=".pdf" required>
+            <div class="upload-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-title">Drop your PDF here</div>
+            <div class="upload-sub">or <span>browse files</span> to upload</div>
+            <div class="upload-file-name" id="fileName"></div>
+        </div>
+        <div class="upload-actions">
+            <span class="upload-hint" id="fileHint">PDF files only · Max 50MB</span>
+            <button type="submit" class="btn-analyze" id="analyzeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                ✨ See Magic
+            </button>
+        </div>
+    </form>
+
+    <div class="loader" id="loader">
+        <div class="loader-dots"><span></span><span></span><span></span></div>
+        Kai is reading your paper…
+    </div>
+</div>
+
+<!-- ── RESULT SECTION ── -->
+{% if analysis %}
+<div id="result-section" class="visible">
+    <div class="result-card">
+
+        <!-- SUMMARY HEADER -->
+        <div class="result-header">
+            <div class="result-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="result-header-text">
+                <h3>Research Analysis</h3>
+                <p>Generated by Kai · Chunked method · Just now</p>
+            </div>
+        </div>
+
+        <!-- SUMMARY BODY — plain pre-wrap text exactly as returned by API -->
+        <div class="result-body">{{ analysis }}</div>
+
+        <!-- CHAT DIVIDER -->
+        <div class="chat-divider">
+            <div class="chat-divider-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div class="chat-divider-text">
+                <h5>Ask Kai about this paper</h5>
+                <p>Powered by context-aware Q&amp;A · Chunked retrieval</p>
+            </div>
+        </div>
+
+        <!-- CHATBOT -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-header-info">
+                    <h4>Kai — Research Assistant</h4>
+                    <p>Online · Ready to help</p>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                {% for msg in chat %}
+                    {% if msg.sender == "user" %}
+                    <div class="chat-bubble user">
+                        <div class="bubble-avatar user-av">{{ request.user.username|first|upper }}</div>
+                        <div>
+                            <div class="bubble-name">{{ request.user.username }}</div>
+                            <div class="bubble-text">{{ msg.text }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="chat-bubble">
+                        <div class="bubble-avatar ai">🤖</div>
+                        <div>
+                            <div class="bubble-name">Kai</div>
+                            <div class="bubble-text">{{ msg.text }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <div style="text-align:center; padding: 40px 0; color: var(--muted); font-size: 14px;">
+                        Ask Kai anything about this paper…
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="chat-input-area">
+                    <input type="text" name="question" class="chat-input" placeholder="Ask Kai about this paper…" required autocomplete="off">
+                    <button type="submit" class="btn-send">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+                        Ask
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+<!-- ── HOW IT WORKS ── -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-label">How it works</div>
+        <h2>Three steps</h2>
+    </div>
+
+    <div class="steps-grid">
+        <div class="step-card">
+            <div class="step-number">01</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h3>Upload Paper</h3>
+            <p>Drop any research PDF into the upload zone.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">02</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <h3>See Magic ✨</h3>
+            <p>Kai reads, chunks, and deeply analyzes your paper.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-number">03</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <h3>Summary + Chat</h3>
+            <p>Get a structured summary, then ask Kai anything.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<div class="section" style="padding-top: 0;">
+    <div class="section-header">
+        <div class="section-label">More Features</div>
+        <h2>What else Kai can do</h2>
+    </div>
+
+    <div class="features-grid">
+        <!-- Compare Card -->
+        <a href="{% url 'compare_pdfs' %}" class="feature-card">
+            <div class="feature-card-banner feature-card-banner-compare">
+                <div class="banner-grid"></div>
+                <div class="banner-visual-compare">
+                    <div class="doc-mock">
+                        <div class="doc-line"></div>
+                        <div class="doc-line short"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line accent short"></div>
+                        <div class="doc-line"></div>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="doc-mock">
+                        <div class="doc-line short"></div>
+                        <div class="doc-line"></div>
+                        <div class="doc-line accent"></div>
+                        <div class="doc-line short"></div>
+                        <div class="doc-line"></div>
+                    </div>
+                </div>
+                <div class="winner-badge">✓ Winner detected</div>
+            </div>
+            <div class="feature-card-body">
+                <div class="feature-meta">
+                    <div class="feature-tag">⚖️ Compare</div>
+                </div>
+                <h3>Compare Two Research Papers</h3>
+                <p>Get a side-by-side AI analysis of any two papers — methodology, findings, and a clear verdict on which research stands stronger.</p>
+                <div class="feature-bullets">
+                    <div class="feature-bullet">Methodology & approach comparison</div>
+                    <div class="feature-bullet">Strengths and weaknesses breakdown</div>
+                    <div class="feature-bullet">AI-powered winner verdict</div>
+                </div>
+                <div class="feature-arrow">
+                    Compare papers now
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+                </div>
+            </div>
+        </a>
+
+        <!-- Search Card -->
+        <a href="{% url 'paper_search' %}" class="feature-card">
+            <div class="feature-card-banner feature-card-banner-search">
+                <div class="banner-grid"></div>
+                <div class="banner-visual-search">
+                    <div class="search-mock">
+                        <div class="search-bar-mock">
+                            <svg class="search-bar-mock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <span class="search-bar-text">microplastics ocean research…</span>
+                            <div class="search-bar-cursor"></div>
+                        </div>
+                        <div class="search-result-mock">
+                            <div class="srm-dot" style="background:rgba(59,130,246,0.6)"></div>
+                            <div class="srm-lines"><div class="srm-line accent-line"></div><div class="srm-line short"></div></div>
+                        </div>
+                        <div class="search-result-mock">
+                            <div class="srm-dot" style="background:rgba(6,182,212,0.6)"></div>
+                            <div class="srm-lines"><div class="srm-line"></div><div class="srm-line accent-line short"></div></div>
+                        </div>
+                        <div class="search-result-mock" style="opacity:0.5">
+                            <div class="srm-dot" style="background:rgba(100,116,139,0.6)"></div>
+                            <div class="srm-lines"><div class="srm-line short"></div><div class="srm-line"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-card-body">
+                <div class="feature-meta">
+                    <div class="feature-tag">🔍 Search</div>
+                </div>
+                <h3>Search Global Research Papers</h3>
+                <p>Explore millions of academic papers by topic, keyword, or author. Discover relevant research instantly with abstracts and direct access links.</p>
+                <div class="feature-bullets">
+                    <div class="feature-bullet">Search by topic, author, or keyword</div>
+                    <div class="feature-bullet">Full abstracts with direct paper links</div>
+                    <div class="feature-bullet">Powered by Semantic Scholar API</div>
+                </div>
+                <div class="feature-arrow">
+                    Search papers now
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- ── HOW WE DO IT ── -->
+<div class="section" style="padding-top: 0;">
+    <div class="section-header">
+        <div class="section-label">Under the Hood</div>
+        <h2>Built for accuracy</h2>
+    </div>
+
+    <div class="tech-grid">
+        <div class="tech-card">
+            <div class="tech-icon" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h4>Chunking Method</h4>
+            <p>Your paper is split into focused semantic chunks before analysis. This means Kai processes section-by-section — yielding deeper, more precise insights rather than a shallow overview.</p>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon" style="background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent2)"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            </div>
+            <h4>Context-Aware Q&A</h4>
+            <p>When you ask Kai a question, it retrieves the most relevant chunks from your specific paper — not generic AI knowledge. Every answer is grounded in your document.</p>
+        </div>
+        <div class="tech-card">
+            <div class="tech-icon" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h4>Structured Summaries</h4>
+            <p>Kai doesn't just compress text — it extracts key contributions, methodology, findings, and limitations in a structured format that mirrors how researchers actually read papers.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── REVIEWS ── -->
+<div class="section" style="padding-top: 0;">
+    <div class="section-header">
+        <div class="section-label">What Researchers Say</div>
+        <h2>Trusted by students & researchers</h2>
+    </div>
+
+    <div class="reviews-grid">
+        <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"I used to spend 2 hours reading a dense ML paper before understanding it. With KAI Labs, I get the core in 10 minutes and can ask exactly what I need. The chunking approach makes the answers actually accurate."</p>
+            <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">A</div>
+                <div>
+                    <div class="review-name">Arjun S.</div>
+                    <div class="review-role">PhD Student, Computer Science</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <p class="review-text">"The compare feature is a game changer for literature reviews. I uploaded two competing papers and got a clear breakdown of which methodology was more robust. Saved me an entire afternoon."</p>
+            <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4);">P</div>
+                <div>
+                    <div class="review-name">Priya M.</div>
+                    <div class="review-role">Research Analyst, Biotech</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <div class="review-stars">★★★★☆</div>
+            <p class="review-text">"Finally a tool that doesn't just summarize — it understands. Kai answered my follow-up questions about the statistical methods used in a paper better than my supervisor could explain them. Genuinely impressive."</p>
+            <div class="review-author">
+                <div class="review-avatar" style="background: linear-gradient(135deg, #10b981, #3b82f6);">R</div>
+                <div>
+                    <div class="review-name">Rahul K.</div>
+                    <div class="review-role">MSc Student, Data Science</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats-strip">
+    <div class="stats-inner">
+        <div class="stat-item">
+            <h4>10s</h4>
+            <p>Average analysis time</p>
+        </div>
+        <div class="stat-item">
+            <h4>GPT-4</h4>
+            <p>Powered by advanced AI</p>
+        </div>
+        <div class="stat-item">
+            <h4>100%</h4>
+            <p>Private & secure</p>
+        </div>
+        <div class="stat-item">
+            <h4>∞</h4>
+            <p>Papers you can analyze</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+    Built with <span>♥</span> by <span>Shubham Singh</span> at Khwaja Boys Hostel &nbsp;·&nbsp; Thank you for visiting <span>KAI Labs</span> — keep researching, keep building 🚀
+</footer>
+
+<script>
+    // File input display
+    const pdfInput = document.getElementById('pdfInput');
+    const fileName = document.getElementById('fileName');
+    const dropZone = document.getElementById('dropZone');
+    const uploadForm = document.getElementById('uploadForm');
+    const loader = document.getElementById('loader');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    pdfInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            fileName.textContent = '📎 ' + this.files[0].name;
+            fileName.style.display = 'block';
+            document.getElementById('fileHint').textContent = '📎 ' + this.files[0].name;
+            document.getElementById('fileHint').style.color = 'var(--accent2)';
+        }
+    });
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) {
+            pdfInput.files = e.dataTransfer.files;
+            fileName.textContent = '📎 ' + e.dataTransfer.files[0].name;
+            fileName.style.display = 'block';
+        }
+    });
+
+    // Show loader on submit
+    uploadForm.addEventListener('submit', function() {
+        loader.classList.add('active');
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<div class="loader-dots" style="display:flex;gap:5px;"><span></span><span></span><span></span></div>';
+    });
+
+    // Scroll to results if present
+    {% if analysis %}
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Auto-scroll chat to bottom
+        const cm = document.getElementById('chatMessages');
+        cm.scrollTop = cm.scrollHeight;
+    });
+    {% endif %}
+</script>
+
+</body>
+</html>

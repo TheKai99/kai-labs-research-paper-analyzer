@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ paper.pdf_name }} — KAI Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #070b13;
+            --surface: #0d1420;
+            --card: #111827;
+            --card2: #141e2e;
+            --border: #1e2d47;
+            --border2: #243450;
+            --accent: #3b82f6;
+            --accent2: #06b6d4;
+            --accent-glow: rgba(59,130,246,0.15);
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --muted2: #94a3b8;
+            --success: #10b981;
+            --font-head: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            height: 64px;
+            background: rgba(7,11,19,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: var(--font-head);
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-greeting {
+            font-size: 13px;
+            color: var(--muted2);
+            padding: 6px 14px;
+            margin-right: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .nav-greeting span { color: var(--accent2); font-weight: 500; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted2);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: var(--font-body);
+        }
+
+        .nav-link:hover { background: var(--surface); color: var(--text); }
+        .nav-link.active { background: var(--accent-glow); color: var(--accent); }
+        .nav-link svg { width: 16px; height: 16px; }
+
+        .nav-link-logout { color: #ef4444; opacity: 0.7; }
+        .nav-link-logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; opacity: 1; }
+
+        /* ── PAGE LAYOUT ── */
+        .page-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 96px 24px 80px;
+            position: relative;
+        }
+
+        /* ── TOP BG GLOW ── */
+        .page-glow {
+            position: fixed;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 300px;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── BACK BUTTON ── */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted2);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .back-btn:hover {
+            border-color: var(--border2);
+            color: var(--text);
+            transform: translateX(-2px);
+        }
+
+        .back-btn svg { width: 14px; height: 14px; }
+
+        /* ── PAPER HEADER ── */
+        .paper-header {
+            margin-bottom: 32px;
+            position: relative;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .paper-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.25);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent2);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .badge-dot {
+            width: 6px; height: 6px;
+            background: var(--accent2);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .paper-title {
+            font-family: var(--font-head);
+            font-size: clamp(22px, 4vw, 32px);
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            line-height: 1.2;
+            color: var(--text);
+        }
+
+        /* ── MAIN CARD ── */
+        .main-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            animation: fadeUp 0.5s 0.1s ease both;
+            position: relative;
+        }
+
+        /* ── SUMMARY SECTION ── */
+        .summary-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.05), transparent);
+        }
+
+        .summary-header-icon {
+            width: 42px; height: 42px;
+            background: rgba(59,130,246,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .summary-header-icon svg { width: 20px; height: 20px; color: var(--accent); }
+
+        .summary-header-text h3 {
+            font-family: var(--font-head);
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .summary-header-text p {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .summary-body {
+            padding: 32px;
+            font-size: 15px;
+            color: var(--muted2);
+            line-height: 1.85;
+            white-space: pre-wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── CHAT SECTION ── */
+        .chat-section {
+            /* inherits from card */
+        }
+
+        .chat-header {
+            padding: 22px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(6,182,212,0.04), transparent);
+        }
+
+        .chat-avatar {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .chat-header-info h4 {
+            font-family: var(--font-head);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .chat-header-info p {
+            font-size: 12px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-header-info p::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .chat-messages {
+            padding: 24px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 120px;
+        }
+
+        .chat-empty {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .chat-empty-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .chat-bubble {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .chat-bubble.user { flex-direction: row-reverse; }
+
+        .bubble-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .bubble-avatar.ai {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            font-size: 16px;
+        }
+
+        .bubble-avatar.user-av {
+            background: var(--border2);
+            color: var(--muted2);
+        }
+
+        .bubble-content { max-width: 75%; }
+
+        .bubble-name {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .chat-bubble.user .bubble-name { text-align: right; }
+
+        .bubble-text {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .chat-bubble.user .bubble-text {
+            background: var(--accent);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble:not(.user) .bubble-text {
+            background: var(--card2);
+            border: 1px solid var(--border);
+            color: var(--muted2);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* ── CHAT INPUT ── */
+        .chat-input-area {
+            padding: 20px 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(13,20,32,0.4);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 13px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .chat-input::placeholder { color: var(--muted); }
+
+        .btn-send {
+            padding: 13px 22px;
+            background: linear-gradient(135deg, var(--accent), #2563eb);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+        }
+
+        .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(59,130,246,0.4);
+        }
+
+        .btn-send svg { width: 15px; height: 15px; }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        footer span { color: var(--accent); }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-greeting { display: none; }
+            .page-wrapper { padding: 80px 16px 60px; }
+            .summary-header, .summary-body, .chat-header, .chat-messages, .chat-input-area { padding-left: 20px; padding-right: 20px; }
+            .bubble-content { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-glow"></div>
+
+<!-- ── NAVBAR ── -->
+<nav>
+    <a href="/" class="nav-brand">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="url(#kg)"/>
+            <rect x="8" y="7" width="3.5" height="18" rx="1.5" fill="white"/>
+            <path d="M12 15.5 L21.5 7.5" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+            <rect x="15" y="14.5" width="3" height="3" rx="1" fill="url(#kg)" opacity="0.9"/>
+            <path d="M12 16.5 L22 24.5" stroke="white" stroke-width="3.2" stroke-linecap="round" opacity="0.7"/>
+            <defs>
+                <linearGradient id="kg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#3b82f6"/>
+                    <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        KAI Labs
+    </a>
+
+    <div class="nav-right">
+        {% if user.is_authenticated %}
+        <div class="nav-greeting">Good day, <span>{{ user.username }}</span> 👋</div>
+        {% endif %}
+
+        <a href="/" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            Home
+        </a>
+
+        <a href="{% url 'paper_search' %}" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+        </a>
+
+        <a href="{% url 'history' %}" class="nav-link active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            History
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="nav-link nav-link-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="nav-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ── PAGE CONTENT ── -->
+<div class="page-wrapper">
+
+    <!-- Back Button -->
+    <a href="{% url 'history' %}" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
+        Back to History
+    </a>
+
+    <!-- Paper Header -->
+    <div class="paper-header">
+        <div class="paper-badge">
+            <div class="badge-dot"></div>
+            Research Paper
+        </div>
+        <h1 class="paper-title">{{ paper.pdf_name }}</h1>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+
+        <!-- Summary -->
+        <div class="summary-header">
+            <div class="summary-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+            </div>
+            <div class="summary-header-text">
+                <h3>AI Summary</h3>
+                <p>Generated by Kai · Saved to history</p>
+            </div>
+        </div>
+
+        <div class="summary-body">{{ paper.summary }}</div>
+
+        <!-- Chatbot -->
+        <div class="chat-header">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-header-info">
+                <h4>Kai — Research Assistant</h4>
+                <p>Online · Ready to help</p>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            {% if answer %}
+                <!-- User question -->
+                <div class="chat-bubble user">
+                    <div class="bubble-avatar user-av">{{ request.user.username|first|upper }}</div>
+                    <div class="bubble-content">
+                        <div class="bubble-name">{{ request.user.username }}</div>
+                        <div class="bubble-text">{{ request.POST.question }}</div>
+                    </div>
+                </div>
+                <!-- Kai answer -->
+                <div class="chat-bubble">
+                    <div class="bubble-avatar ai">🤖</div>
+                    <div class="bubble-content">
+                        <div class="bubble-name">Kai</div>
+                        <div class="bubble-text">{{ answer }}</div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="chat-empty">
+                    <div class="chat-empty-icon">💬</div>
+                    Ask Kai anything about this paper…
+                </div>
+            {% endif %}
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="chat-input-area">
+                <input
+                    type="text"
+                    name="question"
+                    class="chat-input"
+                    placeholder="Ask Kai about this paper…"
+                    required
+                    autocomplete="off"
+                >
+                <button type="submit" class="btn-send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+                    Ask
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+    Built with <span>♥</span> by <span>Shubham Singh</span> at Khwaja Boys Hostel &nbsp;·&nbsp; Thank you for visiting <span>KAI Labs</span> — keep researching, keep building 🚀
+</footer>
+
+<script>
+    // Scroll chat to bottom if answer present
+    {% if answer %}
+    document.addEventListener('DOMContentLoaded', () => {
+        const cm = document.getElementById('chatMessages');
+        cm.scrollTop = cm.scrollHeight;
+    });
+    {% endif %}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History — AI Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #070b13; --surface: #0d1420; --card: #111827; --card2: #141e2e;
+            --border: #1e2d47; --border2: #243450;
+            --accent: #3b82f6; --accent2: #06b6d4; --accent-glow: rgba(59,130,246,0.15);
+            --text: #e2e8f0; --muted: #64748b; --muted2: #94a3b8;
+            --success: #10b981; --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+        }
+        body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px; height: 64px;
+            background: rgba(7,11,19,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand { font-family: var(--font-head); font-size: 20px; font-weight: 800; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .nav-right { display: flex; align-items: center; gap: 4px; }
+        .nav-greeting { font-size: 13px; color: var(--muted2); padding: 6px 14px; margin-right: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
+        .nav-greeting span { color: var(--accent2); font-weight: 500; }
+        .nav-link { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted2); text-decoration: none; transition: all 0.2s; }
+        .nav-link:hover { background: var(--surface); color: var(--text); }
+        .nav-link.active { background: var(--accent-glow); color: var(--accent); }
+        .nav-link svg { width: 16px; height: 16px; }
+        .nav-link-logout { color: #ef4444; opacity: 0.7; }
+        .nav-link-logout:hover { background: rgba(239,68,68,0.1); color: #ef4444; opacity: 1; }
+
+        .page-wrap { padding: 100px 24px 80px; max-width: 900px; margin: 0 auto; }
+
+        .page-header { margin-bottom: 48px; }
+        .page-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+        .page-header h1 { font-family: var(--font-head); font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+        .page-header h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .page-header p { color: var(--muted2); font-size: 15px; }
+
+        .history-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .history-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; transition: border-color 0.2s, transform 0.2s;
+        }
+        .history-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+
+        .history-card-header {
+            padding: 20px 24px;
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(59,130,246,0.03), transparent);
+        }
+
+        .history-card-left { display: flex; align-items: flex-start; gap: 14px; flex: 1; min-width: 0; }
+
+        .history-icon {
+            width: 40px; height: 40px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .history-icon svg { width: 18px; height: 18px; color: var(--accent); }
+
+        .history-name {
+            font-family: var(--font-head); font-size: 15px; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;
+        }
+        .history-meta { font-size: 12px; color: var(--muted); }
+
+        .btn-open {
+            flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--accent2);
+            text-decoration: none; transition: all 0.2s;
+        }
+        .btn-open:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-open svg { width: 14px; height: 14px; }
+
+        .history-summary {
+            padding: 16px 24px;
+            font-size: 14px; color: var(--muted2); line-height: 1.6;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-qa { padding: 16px 24px; }
+        .history-qa-title {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 12px;
+        }
+
+        .qa-item { margin-bottom: 10px; }
+        .qa-q { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+        .qa-q::before { content: 'Q '; color: var(--accent); font-weight: 700; }
+        .qa-a { font-size: 13px; color: var(--muted2); line-height: 1.5; padding-left: 16px; }
+        .qa-a::before { content: 'A '; color: var(--accent2); font-weight: 700; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 100px 20px; }
+        .empty-icon { font-size: 64px; margin-bottom: 20px; }
+        .empty-state h3 { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+        .empty-state p { color: var(--muted2); font-size: 15px; margin-bottom: 28px; }
+        .btn-start {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 13px 24px; background: linear-gradient(135deg, var(--accent), #2563eb);
+            color: #fff; font-family: var(--font-head); font-size: 14px; font-weight: 700;
+            border-radius: 10px; text-decoration: none; transition: all 0.2s;
+        }
+        .btn-start:hover { box-shadow: 0 6px 24px rgba(59,130,246,0.35); transform: translateY(-2px); }
+
+        @media (max-width: 640px) { nav { padding: 0 16px; } .nav-greeting { display: none; } }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <a href="/" class="nav-brand">
+        <div class="nav-brand-icon">⚡</div>
+        AI Analyzer
+    </a>
+    <div class="nav-right">
+        {% if user.is_authenticated %}
+        <div class="nav-greeting">Good day, <span>{{ user.username }}</span> 👋</div>
+        {% endif %}
+        <a href="/" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            Home
+        </a>
+        <a href="{% url 'paper_search' %}" class="nav-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+        </a>
+        <a href="{% url 'history' %}" class="nav-link active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            History
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="nav-link nav-link-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <div class="page-header">
+        <div class="page-badge">🕐 History</div>
+        <h1>Your <em>Research History</em></h1>
+        <p>All your analyzed papers, summaries, and conversations — in one place.</p>
+    </div>
+
+    {% if history %}
+    <div class="history-list">
+        {% for item in history %}
+        <div class="history-card">
+            <div class="history-card-header">
+                <div class="history-card-left">
+                    <div class="history-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+                    </div>
+                    <div>
+                        <div class="history-name">{{ item.pdf_name }}</div>
+                        <div class="history-meta">Analyzed by Kai</div>
+                    </div>
+                </div>
+                <a href="{% url 'paper_detail' item.id %}" class="btn-open">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Open
+                </a>
+            </div>
+
+            {% if item.summary %}
+            <div class="history-summary">
+                {{ item.summary|truncatechars:240 }}
+            </div>
+            {% endif %}
+
+            {% if item.qa_pairs %}
+            <div class="history-qa">
+                <div class="history-qa-title">Q&A from this paper</div>
+                {% for qa in item.qa_pairs|slice:":3" %}
+                <div class="qa-item">
+                    <div class="qa-q">{{ qa.question }}</div>
+                    <div class="qa-a">{{ qa.answer|truncatechars:160 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No papers yet</h3>
+        <p>You haven't analyzed any research papers yet.<br>Upload your first one to get started.</p>
+        <a href="/" class="btn-start">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Analyze your first paper
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
