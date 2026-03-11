@@ -1,8 +1,8 @@
 # 🔬 KAI Labs — Research Paper Analyzer
-[Python](https://img.shields.io/badge/Python-3.10-blue)
-[Django](https://img.shields.io/badge/Django-Backend-green)
-[AI](https://img.shields.io/badge/AI-Gemini-orange)
-[Status](https://img.shields.io/badge/Project-Active-brightgreen)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Django](https://img.shields.io/badge/Django-Backend-green)
+![AI](https://img.shields.io/badge/AI-Gemini-orange)
+![Status](https://img.shields.io/badge/Project-Active-brightgreen)
 
 **AI-powered research paper analysis built with Django & Google Gemini.**
 
