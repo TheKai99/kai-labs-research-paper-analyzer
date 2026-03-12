@@ -174,7 +174,7 @@ def format_comparison_html(text):
 #         analysis_html = format_analysis_html(analysis)
 
 #     return render(request, 'index.html', {'analysis': analysis,'analysis_html': analysis_html, 'chat': chat})
-@login_requird
+@login_required
 def upload_pdf(request):
     analysis = None
 
